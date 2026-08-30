@@ -2,17 +2,33 @@
 
 import { Technician, TimelineEntry } from "@/lib/engine/types";
 import { hhmmToMinutes, minutesToHhmm } from "@/lib/engine/time";
-import { skillColor } from "@/lib/ui/skillColor";
+import { skillColor, skillTint } from "@/lib/ui/skillColor";
 
 type Segment =
   | { type: "job"; minutes: number; entry: TimelineEntry }
   | { type: "travel"; minutes: number }
-  | { type: "idle"; minutes: number };
+  | { type: "idle"; minutes: number }
+  | { type: "off-shift"; minutes: number };
 
-function buildSegments(entries: TimelineEntry[], shiftStart: number, shiftEnd: number): Segment[] {
+const OFF_SHIFT_TEXTURE = {
+  backgroundImage:
+    "repeating-linear-gradient(135deg, rgba(28,25,23,0.07) 0px, rgba(28,25,23,0.07) 1px, transparent 1px, transparent 7px)",
+};
+
+function buildSegments(
+  entries: TimelineEntry[],
+  globalStart: number,
+  shiftStart: number,
+  shiftEnd: number,
+  globalEnd: number
+): Segment[] {
   const segments: Segment[] = [];
-  let cursor = shiftStart;
 
+  if (shiftStart > globalStart) {
+    segments.push({ type: "off-shift", minutes: shiftStart - globalStart });
+  }
+
+  let cursor = shiftStart;
   for (const entry of entries) {
     if (entry.travelFromPrev > 0) {
       segments.push({ type: "travel", minutes: entry.travelFromPrev });
@@ -33,46 +49,53 @@ function buildSegments(entries: TimelineEntry[], shiftStart: number, shiftEnd: n
     segments.push({ type: "idle", minutes: tailIdle });
   }
 
+  if (globalEnd > shiftEnd) {
+    segments.push({ type: "off-shift", minutes: globalEnd - shiftEnd });
+  }
+
   return segments;
 }
 
 export default function TechnicianTimeline({
   technician,
   entries,
+  globalStart,
+  globalEnd,
   selectedJobId,
   onSelectJob,
 }: {
   technician: Technician;
   entries: TimelineEntry[];
+  globalStart: number;
+  globalEnd: number;
   selectedJobId?: string | null;
   onSelectJob?: (jobId: string) => void;
 }) {
   const shiftStart = hhmmToMinutes(technician.shift_start);
   const shiftEnd = hhmmToMinutes(technician.shift_end);
-  const totalMinutes = Math.max(shiftEnd - shiftStart, 1);
-  const segments = buildSegments(entries, shiftStart, shiftEnd);
+  const totalMinutes = Math.max(globalEnd - globalStart, 1);
+  const segments = buildSegments(entries, globalStart, shiftStart, shiftEnd, globalEnd);
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/40">
+    <div className="group/row flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors duration-200 hover:bg-stone-50">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600/10 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-300">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600/10 text-[10px] font-semibold text-violet-700 transition-transform duration-200 group-hover/row:scale-110">
             {technician.name.slice(0, 1).toUpperCase()}
           </span>
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {technician.name}
-          </span>
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          <span className="text-sm font-medium text-stone-900">{technician.name}</span>
+          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500">
             {technician.home_area}
           </span>
         </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="font-mono text-[11px] tabular-nums text-stone-400">
           {technician.shift_start}–{technician.shift_end}
         </span>
       </div>
-      <div className="flex h-11 w-full overflow-hidden rounded-lg bg-zinc-100 shadow-inner ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/5">
+      <div className="flex h-9 w-full rounded-lg bg-stone-100 ring-1 ring-stone-200/80">
         {segments.map((seg, i) => {
           const widthPercent = (seg.minutes / totalMinutes) * 100;
+          const rounding = i === 0 ? "rounded-l-lg" : i === segments.length - 1 ? "rounded-r-lg" : "";
 
           if (seg.type === "job") {
             const job = seg.entry.job;
@@ -83,12 +106,17 @@ export default function TechnicianTimeline({
                 type="button"
                 onClick={onSelectJob ? () => onSelectJob(job.id) : undefined}
                 title={`${job.id} · ${job.area} · ${job.skill} · window ${job.window_start}-${job.window_end} · scheduled ${minutesToHhmm(seg.entry.start)}-${minutesToHhmm(seg.entry.end)}`}
-                style={{ width: `${widthPercent}%`, backgroundColor: skillColor(job.skill) }}
-                className={`flex items-center justify-center overflow-hidden border-r border-white/25 px-1 text-[10px] font-semibold text-white outline-none last:border-r-0 ${
-                  onSelectJob ? "cursor-pointer" : ""
-                } ${isSelected ? "ring-2 ring-inset ring-white" : ""}`}
+                style={{
+                  width: `${widthPercent}%`,
+                  backgroundColor: skillTint(job.skill),
+                  borderLeft: `3px solid ${skillColor(job.skill)}`,
+                  color: skillColor(job.skill),
+                }}
+                className={`relative flex items-center justify-center overflow-hidden px-1 text-[10px] font-bold outline-none transition-all duration-200 ease-out ${rounding} ${
+                  onSelectJob ? "cursor-pointer hover:z-10 hover:scale-[1.08] hover:shadow-lg" : ""
+                } ${isSelected ? "z-10 shadow-lg ring-2 ring-violet-500" : ""}`}
               >
-                <span className="truncate drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)]">{job.id}</span>
+                <span className="truncate">{job.id}</span>
               </button>
             );
           }
@@ -99,10 +127,21 @@ export default function TechnicianTimeline({
                 key={i}
                 title={`travel ${seg.minutes}min`}
                 style={{ width: `${widthPercent}%` }}
-                className="flex items-center justify-center overflow-hidden border-r border-white/40 bg-zinc-300 text-[9px] font-medium text-zinc-600 last:border-r-0 dark:border-black/20 dark:bg-zinc-700 dark:text-zinc-300"
+                className={`flex items-center justify-center overflow-hidden transition-all duration-300 ${rounding}`}
               >
-                {widthPercent > 4 ? `${seg.minutes}m` : ""}
+                <span className="h-px w-full bg-stone-400" />
               </div>
+            );
+          }
+
+          if (seg.type === "off-shift") {
+            return (
+              <div
+                key={i}
+                title="off shift"
+                style={{ width: `${widthPercent}%`, ...OFF_SHIFT_TEXTURE }}
+                className={`bg-stone-200 transition-all duration-300 ${rounding}`}
+              />
             );
           }
 
@@ -111,7 +150,7 @@ export default function TechnicianTimeline({
               key={i}
               title={`idle ${seg.minutes}min`}
               style={{ width: `${widthPercent}%` }}
-              className="border-r border-white/40 last:border-r-0 dark:border-black/20"
+              className={`bg-stone-50 transition-all duration-300 ${rounding}`}
             />
           );
         })}

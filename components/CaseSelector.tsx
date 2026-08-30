@@ -11,7 +11,7 @@ export default function CaseSelector() {
 
   if (dataset.cases.length === 0) {
     return (
-      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+      <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">
         File loaded, but it has no cases
       </span>
     );
@@ -19,10 +19,7 @@ export default function CaseSelector() {
 
   return (
     <div className="flex items-center gap-2">
-      <label
-        htmlFor="case-select"
-        className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
-      >
+      <label htmlFor="case-select" className="text-xs font-medium uppercase tracking-wide text-stone-400">
         Case
       </label>
       <div className="relative">
@@ -30,7 +27,7 @@ export default function CaseSelector() {
           id="case-select"
           value={selectedCaseId ?? ""}
           onChange={(e) => selectCase(e.target.value)}
-          className="appearance-none rounded-lg border border-zinc-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-zinc-900 shadow-sm transition-colors hover:border-zinc-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-zinc-600"
+          className="appearance-none rounded-lg border border-stone-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-stone-900 shadow-sm transition-colors hover:border-stone-300 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30"
         >
           {dataset.cases.map((c) => (
             <option key={c.case_id} value={c.case_id}>
@@ -41,7 +38,7 @@ export default function CaseSelector() {
         <svg
           viewBox="0 0 20 20"
           fill="none"
-          className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"
         >
           <path d="M5.5 7.5 10 12l4.5-4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

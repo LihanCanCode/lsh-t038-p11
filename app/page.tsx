@@ -12,17 +12,17 @@ export default function Home() {
   const hasNoCases = dataset !== null && dataset.cases.length === 0;
 
   return (
-    <div className="flex flex-1 flex-col items-center bg-gradient-to-b from-zinc-50 to-zinc-100 font-sans dark:from-black dark:to-zinc-950">
+    <div className="flex flex-1 flex-col items-center font-sans">
       <main className="flex w-full max-w-2xl flex-col gap-8 py-20 px-6">
         <div className="text-center">
-          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white/70 px-3 py-1 text-xs font-medium text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3 py-1 text-xs font-medium text-stone-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
             Technician Dispatch Planner
           </span>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          <h1 className="text-4xl font-semibold tracking-tight text-stone-900">
             Plan the day&apos;s routes in seconds
           </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-sm text-stone-500">
             Upload the route/shift dataset and pick a case to generate an assignment plan.
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function Home() {
         <UploadDropzone />
 
         {hasNoCases && (
-          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
               <path
                 d="M10 6v4.5M10 14h.01M9.1 3.5 2.3 15.3a1 1 0 0 0 .87 1.5h13.66a1 1 0 0 0 .87-1.5L10.9 3.5a1 1 0 0 0-1.8 0Z"
@@ -45,13 +45,11 @@ export default function Home() {
         )}
 
         {selectedCase && (
-          <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-950/60">
+          <div className="flex flex-col gap-4 rounded-2xl border border-stone-200 bg-white p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
-                  {selectedCase.case_id}
-                </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{selectedCase.today}</p>
+                <h2 className="text-sm font-semibold text-stone-900">{selectedCase.case_id}</h2>
+                <p className="font-mono text-xs tabular-nums text-stone-400">{selectedCase.today}</p>
               </div>
               <CaseSelector />
             </div>
@@ -64,7 +62,7 @@ export default function Home() {
 
             <Link
               href="/planner"
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-violet-700"
             >
               View plan
               <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">

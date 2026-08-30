@@ -2,9 +2,9 @@ import { Case, Plan, TimelineEntry } from "./types";
 import { canInsert, shiftBoundsFor } from "./feasibility";
 import { recomputeRouteFrom } from "./route";
 
-export type ManualMoveResult =
-  | { ok: true; newPlan: Plan }
-  | { ok: false; reason: "SKILL_MISMATCH" | "OUTSIDE_SHIFT" | "WINDOW_UNREACHABLE" | "BUMPS_LATER_JOB" };
+export type ManualMoveReason = "SKILL_MISMATCH" | "OUTSIDE_SHIFT" | "WINDOW_UNREACHABLE" | "BUMPS_LATER_JOB";
+
+export type ManualMoveResult = { ok: true; newPlan: Plan } | { ok: false; reason: ManualMoveReason };
 
 // Moves `jobId` onto `toTechId`'s route, wherever it currently lives (another
 // technician's route or the unassigned list). Reuses canInsert's reason

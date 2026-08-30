@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { DatasetSchema } from "@/lib/engine/types";
+import { findAreaReferenceIssues } from "@/lib/engine/validate";
 import { useDatasetStore } from "@/lib/store/useDatasetStore";
 
 export default function UploadDropzone() {
@@ -25,6 +26,21 @@ export default function UploadDropzone() {
           setError(`This file doesn't match the expected dataset shape.\n${issues}`);
           return;
         }
+
+        const areaIssuesByCase = result.data.cases
+          .map((kase) => ({ caseId: kase.case_id, issues: findAreaReferenceIssues(kase) }))
+          .filter((c) => c.issues.length > 0);
+        if (areaIssuesByCase.length > 0) {
+          const { caseId, issues } = areaIssuesByCase[0];
+          const preview = issues
+            .slice(0, 3)
+            .map((i) => `• ${i}`)
+            .join("\n");
+          const more = areaIssuesByCase.length > 1 ? `\n…and ${areaIssuesByCase.length - 1} more case(s) affected.` : "";
+          setError(`Case "${caseId}" has inconsistent area references.\n${preview}${more}`);
+          return;
+        }
+
         setDataset(result.data);
       } catch (e) {
         setError(
@@ -51,10 +67,8 @@ export default function UploadDropzone() {
         if (file) handleFile(file);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-12 text-center transition-colors ${
-        isDragging
-          ? "border-indigo-500 bg-indigo-50/60 dark:border-indigo-400 dark:bg-indigo-950/20"
-          : "border-zinc-300 bg-white/60 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950/40 dark:hover:border-zinc-600"
+      className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-200 ${
+        isDragging ? "border-violet-400 bg-violet-50/60" : "border-stone-200 bg-white hover:border-stone-300"
       }`}
     >
       <input
@@ -68,7 +82,7 @@ export default function UploadDropzone() {
           e.target.value = "";
         }}
       />
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-50 text-violet-600 transition-transform duration-200">
         <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
           <path
             d="M12 16V4m0 0-4 4m4-4 4 4M5 16.8V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.2"
@@ -79,16 +93,12 @@ export default function UploadDropzone() {
           />
         </svg>
       </span>
-      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-        Drop the dataset JSON here, or click to browse
-      </p>
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-sm font-medium text-stone-900">Drop the dataset JSON here, or click to browse</p>
+      <p className="text-xs text-stone-400">
         Expects the P11_route_shift dataset shape ({"{ schema_version, problem_id, cases[] }"})
       </p>
       {error && (
-        <p className="mt-1 whitespace-pre-line text-left text-xs font-medium text-red-600 dark:text-red-400">
-          {error}
-        </p>
+        <p className="mt-1 whitespace-pre-line text-left text-xs font-medium text-rose-600">{error}</p>
       )}
     </div>
   );
