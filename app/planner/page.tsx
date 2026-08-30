@@ -18,6 +18,7 @@ import StatCard from "@/components/StatCard";
 import ManualMoveControl, { MoveOutcome, MovePreview } from "@/components/ManualMoveControl";
 import EmergencyJobForm, { EmergencyJobInput } from "@/components/EmergencyJobForm";
 import SickTechnicianForm from "@/components/SickTechnicianForm";
+import { REASON_LABEL } from "@/lib/ui/reasonLabel";
 
 export default function PlannerPage() {
   const kase = useSelectedCase();
@@ -29,6 +30,9 @@ export default function PlannerPage() {
   const [emergencyCounter, setEmergencyCounter] = useState(1);
   const [cursorMinutes, setCursorMinutes] = useState<number | null>(null);
   const [sickTechnicianIds, setSickTechnicianIds] = useState<Set<string>>(new Set());
+  const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
+  const [dragOverTechId, setDragOverTechId] = useState<string | null>(null);
+  const [dropFeedback, setDropFeedback] = useState<{ ok: boolean; message: string } | null>(null);
 
   // Rebuild the plan whenever the selected case changes. Done during render
   // (not an effect) so the freshly-built plan is used for this render.
@@ -42,6 +46,9 @@ export default function PlannerPage() {
     setEmergencyCounter(1);
     setCursorMinutes(null);
     setSickTechnicianIds(new Set());
+    setDraggedJobId(null);
+    setDragOverTechId(null);
+    setDropFeedback(null);
     if (!kase) {
       setPlan(null);
       setPlanError(null);
@@ -188,6 +195,27 @@ export default function PlannerPage() {
     }
   }
 
+  function handleDropOnTechnician(toTechId: string) {
+    const jobId = draggedJobId;
+    setDraggedJobId(null);
+    setDragOverTechId(null);
+    if (!jobId) return;
+
+    const outcome = handleMove(jobId, toTechId);
+    setSelectedJobId(jobId);
+    setDropFeedback(
+      outcome.ok
+        ? { ok: true, message: `Moved ${jobId} to ${toTechId}.` }
+        : {
+            ok: false,
+            message:
+              "reason" in outcome
+                ? `Couldn't move ${jobId} to ${toTechId}: ${REASON_LABEL[outcome.reason]} (${outcome.reason})`
+                : `Couldn't move ${jobId} to ${toTechId}: ${outcome.error}`,
+          }
+    );
+  }
+
   const availableTechnicians = kase ? kase.technicians.filter((t) => !sickTechnicianIds.has(t.id)) : [];
 
   if (planError) {
@@ -254,19 +282,44 @@ export default function PlannerPage() {
           <div className="px-2">
             <TimelineRuler startMinutes={globalRange.start} endMinutes={globalRange.end} />
           </div>
+          {dropFeedback && (
+            <div
+              className={`mb-2 rounded-lg px-3 py-2 text-xs font-medium ${
+                dropFeedback.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"
+              }`}
+            >
+              {dropFeedback.message}
+            </div>
+          )}
           <div className="relative flex flex-col divide-y divide-stone-100">
-            {kase.technicians.map((tech) => (
-              <TechnicianTimeline
-                key={tech.id}
-                technician={tech}
-                entries={plan.routes[tech.id] ?? []}
-                globalStart={globalRange.start}
-                globalEnd={globalRange.end}
-                selectedJobId={selectedJobId}
-                onSelectJob={setSelectedJobId}
-                isSick={sickTechnicianIds.has(tech.id)}
-              />
-            ))}
+            {kase.technicians.map((tech) => {
+              const isDropTarget = dragOverTechId === tech.id;
+              const dropPreviewOk =
+                isDropTarget && draggedJobId ? previewMove(draggedJobId, tech.id).ok : null;
+              return (
+                <TechnicianTimeline
+                  key={tech.id}
+                  technician={tech}
+                  entries={plan.routes[tech.id] ?? []}
+                  globalStart={globalRange.start}
+                  globalEnd={globalRange.end}
+                  selectedJobId={selectedJobId}
+                  onSelectJob={setSelectedJobId}
+                  isSick={sickTechnicianIds.has(tech.id)}
+                  draggedJobId={draggedJobId}
+                  onJobDragStart={setDraggedJobId}
+                  onJobDragEnd={() => {
+                    setDraggedJobId(null);
+                    setDragOverTechId(null);
+                  }}
+                  isDropTarget={isDropTarget}
+                  dropPreviewOk={dropPreviewOk}
+                  onRowDragOver={() => setDragOverTechId(tech.id)}
+                  onRowDragLeave={() => setDragOverTechId((id) => (id === tech.id ? null : id))}
+                  onRowDrop={() => handleDropOnTechnician(tech.id)}
+                />
+              );
+            })}
             {cursorMinutes !== null && cursorMinutes >= globalRange.start && cursorMinutes <= globalRange.end && (
               <div
                 className="pointer-events-none absolute inset-y-0 z-20 w-px bg-violet-500"

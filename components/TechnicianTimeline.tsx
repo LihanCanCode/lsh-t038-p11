@@ -64,6 +64,14 @@ export default function TechnicianTimeline({
   selectedJobId,
   onSelectJob,
   isSick,
+  draggedJobId,
+  onJobDragStart,
+  onJobDragEnd,
+  isDropTarget,
+  dropPreviewOk,
+  onRowDragOver,
+  onRowDragLeave,
+  onRowDrop,
 }: {
   technician: Technician;
   entries: TimelineEntry[];
@@ -72,14 +80,54 @@ export default function TechnicianTimeline({
   selectedJobId?: string | null;
   onSelectJob?: (jobId: string) => void;
   isSick?: boolean;
+  draggedJobId?: string | null;
+  onJobDragStart?: (jobId: string) => void;
+  onJobDragEnd?: () => void;
+  isDropTarget?: boolean;
+  dropPreviewOk?: boolean | null;
+  onRowDragOver?: () => void;
+  onRowDragLeave?: () => void;
+  onRowDrop?: () => void;
 }) {
   const shiftStart = hhmmToMinutes(technician.shift_start);
   const shiftEnd = hhmmToMinutes(technician.shift_end);
   const totalMinutes = Math.max(globalEnd - globalStart, 1);
   const segments = buildSegments(entries, globalStart, shiftStart, shiftEnd, globalEnd);
+  const canDrop = Boolean(onRowDrop) && !isSick;
+
+  const dropRingClass = !isDropTarget
+    ? "ring-stone-200/80"
+    : dropPreviewOk === false
+      ? "ring-2 ring-rose-400 bg-rose-50/60"
+      : "ring-2 ring-emerald-400 bg-emerald-50/60";
 
   return (
     <div
+      onDragOver={
+        canDrop
+          ? (e) => {
+              e.preventDefault();
+              onRowDragOver?.();
+            }
+          : undefined
+      }
+      onDragLeave={
+        canDrop
+          ? (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                onRowDragLeave?.();
+              }
+            }
+          : undefined
+      }
+      onDrop={
+        canDrop
+          ? (e) => {
+              e.preventDefault();
+              onRowDrop?.();
+            }
+          : undefined
+      }
       className={`group/row flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors duration-200 hover:bg-stone-50 ${
         isSick ? "opacity-60" : ""
       }`}
@@ -103,7 +151,7 @@ export default function TechnicianTimeline({
           {technician.shift_start}–{technician.shift_end}
         </span>
       </div>
-      <div className="flex h-9 w-full rounded-lg bg-stone-100 ring-1 ring-stone-200/80">
+      <div className={`flex h-9 w-full rounded-lg bg-stone-100 ring-1 transition-all duration-150 ${dropRingClass}`}>
         {segments.map((seg, i) => {
           const widthPercent = (seg.minutes / totalMinutes) * 100;
           const rounding = i === 0 ? "rounded-l-lg" : i === segments.length - 1 ? "rounded-r-lg" : "";
@@ -111,10 +159,22 @@ export default function TechnicianTimeline({
           if (seg.type === "job") {
             const job = seg.entry.job;
             const isSelected = selectedJobId === job.id;
+            const isBeingDragged = draggedJobId === job.id;
             return (
               <button
                 key={i}
                 type="button"
+                draggable={Boolean(onJobDragStart)}
+                onDragStart={
+                  onJobDragStart
+                    ? (e) => {
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", job.id);
+                        onJobDragStart(job.id);
+                      }
+                    : undefined
+                }
+                onDragEnd={onJobDragEnd}
                 onClick={onSelectJob ? () => onSelectJob(job.id) : undefined}
                 title={`${job.id} · ${job.area} · ${job.skill} · window ${job.window_start}-${job.window_end} · scheduled ${minutesToHhmm(seg.entry.start)}-${minutesToHhmm(seg.entry.end)}`}
                 style={{
@@ -124,8 +184,8 @@ export default function TechnicianTimeline({
                   color: skillColor(job.skill),
                 }}
                 className={`relative flex items-center justify-center overflow-hidden px-1 text-[10px] font-bold outline-none transition-all duration-200 ease-out ${rounding} ${
-                  onSelectJob ? "cursor-pointer hover:z-10 hover:scale-[1.08] hover:shadow-lg" : ""
-                } ${isSelected ? "z-10 shadow-lg ring-2 ring-violet-500" : ""}`}
+                  onSelectJob ? "cursor-grab active:cursor-grabbing hover:z-10 hover:scale-[1.08] hover:shadow-lg" : ""
+                } ${isSelected ? "z-10 shadow-lg ring-2 ring-violet-500" : ""} ${isBeingDragged ? "opacity-30" : ""}`}
               >
                 <span className="truncate">{job.id}</span>
               </button>

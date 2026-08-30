@@ -50,7 +50,8 @@ export default function ManualMoveControl({
   if (!job) {
     return (
       <p className="text-sm text-stone-500">
-        Click a job block in a timeline, or a job in the unassigned list, to reassign it.
+        Click a job block in a timeline, or a job in the unassigned list, to reassign it — or just drag a
+        job block onto another technician&apos;s row.
       </p>
     );
   }
@@ -102,6 +103,10 @@ export default function ManualMoveControl({
           );
         })}
       </div>
+
+      <p className="text-[11px] text-stone-400">
+        Tip: you can also drag this job block directly onto another technician&apos;s row.
+      </p>
 
       {lastOutcome && (
         <div
