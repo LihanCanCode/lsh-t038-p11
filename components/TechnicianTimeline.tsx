@@ -72,6 +72,7 @@ export default function TechnicianTimeline({
   onRowDragOver,
   onRowDragLeave,
   onRowDrop,
+  movedJobIds,
 }: {
   technician: Technician;
   entries: TimelineEntry[];
@@ -88,6 +89,7 @@ export default function TechnicianTimeline({
   onRowDragOver?: () => void;
   onRowDragLeave?: () => void;
   onRowDrop?: () => void;
+  movedJobIds?: Set<string>;
 }) {
   const shiftStart = hhmmToMinutes(technician.shift_start);
   const shiftEnd = hhmmToMinutes(technician.shift_end);
@@ -190,6 +192,9 @@ export default function TechnicianTimeline({
                 } ${isSelected ? "z-10 shadow-lg ring-2 ring-violet-500" : ""} ${isBeingDragged ? "opacity-30" : ""}`}
               >
                 <span className="truncate">{job.id}</span>
+                {movedJobIds?.has(job.id) && (
+                  <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-amber-500 ring-1 ring-white" />
+                )}
               </button>
             );
           }

@@ -406,26 +406,28 @@ export default function PlannerPage() {
                 onSubmit={handleMarkSick}
               />
             )}
+
+            <div className="mt-5 border-t border-stone-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowComparison((v) => !v)}
+                className="flex w-full items-center justify-between rounded-lg px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-stone-500 transition-colors hover:text-stone-700"
+              >
+                Score &amp; compare
+                <span className="text-violet-600">{showComparison ? "Hide" : "Open"}</span>
+              </button>
+            </div>
           </aside>
         </div>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <button
-            type="button"
-            onClick={() => setShowComparison((v) => !v)}
-            className="flex w-full items-center justify-between text-left"
-          >
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+        {showComparison && (
+          <section className="rounded-2xl border border-stone-200 bg-white p-5">
+            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-stone-400">
               Score &amp; compare — build an alternate plan by hand
             </h2>
-            <span className="text-xs font-medium text-violet-600">{showComparison ? "Hide" : "Show"}</span>
-          </button>
-          {showComparison && (
-            <div className="mt-4">
-              <PlanComparisonPanel key={kase.case_id} kase={kase} />
-            </div>
-          )}
-        </section>
+            <PlanComparisonPanel key={kase.case_id} kase={kase} />
+          </section>
+        )}
       </main>
     </div>
   );
