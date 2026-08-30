@@ -18,17 +18,20 @@ export default function UploadDropzone() {
         const json = JSON.parse(text);
         const result = DatasetSchema.safeParse(json);
         if (!result.success) {
-          setError(
-            `Invalid file: ${result.error.issues
-              .slice(0, 3)
-              .map((i) => `${i.path.join(".")}: ${i.message}`)
-              .join("; ")}`
-          );
+          const issues = result.error.issues
+            .slice(0, 3)
+            .map((i) => `• ${i.path.join(".") || "(root)"}: ${i.message}`)
+            .join("\n");
+          setError(`This file doesn't match the expected dataset shape.\n${issues}`);
           return;
         }
         setDataset(result.data);
       } catch (e) {
-        setError(e instanceof Error ? `Could not parse file: ${e.message}` : "Could not parse file.");
+        setError(
+          e instanceof Error
+            ? `Couldn't read this file as JSON: ${e.message}`
+            : "Couldn't read this file as JSON."
+        );
       }
     },
     [setDataset, setError]
@@ -83,7 +86,9 @@ export default function UploadDropzone() {
         Expects the P11_route_shift dataset shape ({"{ schema_version, problem_id, cases[] }"})
       </p>
       {error && (
-        <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-1 whitespace-pre-line text-left text-xs font-medium text-red-600 dark:text-red-400">
+          {error}
+        </p>
       )}
     </div>
   );

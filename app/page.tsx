@@ -4,10 +4,12 @@ import Link from "next/link";
 import UploadDropzone from "@/components/UploadDropzone";
 import CaseSelector from "@/components/CaseSelector";
 import StatCard from "@/components/StatCard";
-import { useSelectedCase } from "@/lib/store/useDatasetStore";
+import { useDatasetStore, useSelectedCase } from "@/lib/store/useDatasetStore";
 
 export default function Home() {
+  const dataset = useDatasetStore((s) => s.dataset);
   const selectedCase = useSelectedCase();
+  const hasNoCases = dataset !== null && dataset.cases.length === 0;
 
   return (
     <div className="flex flex-1 flex-col items-center bg-gradient-to-b from-zinc-50 to-zinc-100 font-sans dark:from-black dark:to-zinc-950">
@@ -26,6 +28,21 @@ export default function Home() {
         </div>
 
         <UploadDropzone />
+
+        {hasNoCases && (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+            <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+              <path
+                d="M10 6v4.5M10 14h.01M9.1 3.5 2.3 15.3a1 1 0 0 0 .87 1.5h13.66a1 1 0 0 0 .87-1.5L10.9 3.5a1 1 0 0 0-1.8 0Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            This file parsed fine, but its <code>cases</code> array is empty — nothing to plan.
+          </div>
+        )}
 
         {selectedCase && (
           <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-950/60">

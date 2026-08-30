@@ -9,6 +9,14 @@ export default function CaseSelector() {
 
   if (!dataset) return null;
 
+  if (dataset.cases.length === 0) {
+    return (
+      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+        File loaded, but it has no cases
+      </span>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2">
       <label
