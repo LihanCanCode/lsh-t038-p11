@@ -8,6 +8,14 @@ export type ShiftBounds = {
   homeArea: string;
 };
 
+export function shiftBoundsFor(tech: Technician): ShiftBounds {
+  return {
+    startMinutes: hhmmToMinutes(tech.shift_start),
+    endMinutes: hhmmToMinutes(tech.shift_end),
+    homeArea: tech.home_area,
+  };
+}
+
 type FailureReason = "WINDOW_UNREACHABLE" | "BUMPS_LATER_JOB" | "OUTSIDE_SHIFT";
 
 // Prefer the most specific/actionable reason when every position fails.
@@ -100,6 +108,7 @@ export function canInsert(
       arrival: best.arrival,
       start: best.start,
       end: best.end,
+      addedTravelMinutes: best.addedTravel,
     };
   }
 

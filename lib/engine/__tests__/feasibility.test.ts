@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { canInsert, ShiftBounds } from "../feasibility";
+import { canInsert, shiftBoundsFor } from "../feasibility";
 import { DatasetSchema, Job, Technician, TimelineEntry } from "../types";
 import { TravelMatrix } from "../travel";
 import { hhmmToMinutes } from "../time";
@@ -39,14 +39,6 @@ function makeJob(overrides: Partial<Job> = {}): Job {
   };
 }
 
-function shiftBoundsFor(tech: Technician): ShiftBounds {
-  return {
-    startMinutes: hhmmToMinutes(tech.shift_start),
-    endMinutes: hhmmToMinutes(tech.shift_end),
-    homeArea: tech.home_area,
-  };
-}
-
 describe("canInsert - controlled fixtures", () => {
   it("rejects when the technician lacks the required skill", () => {
     const tech = makeTech({ skills: ["electrical"] });
@@ -59,7 +51,14 @@ describe("canInsert - controlled fixtures", () => {
     const tech = makeTech();
     const job = makeJob({ area: "A", window_start: "09:00", window_end: "10:00" });
     const result = canInsert(job, tech, [], FIXTURE_TRAVEL, shiftBoundsFor(tech));
-    expect(result).toEqual({ ok: true, insertIndex: 0, arrival: 540, start: 540, end: 570 });
+    expect(result).toEqual({
+      ok: true,
+      insertIndex: 0,
+      arrival: 540,
+      start: 540,
+      end: 570,
+      addedTravelMinutes: 0,
+    });
   });
 
   it("rejects a job that cannot be reached before its window closes", () => {
@@ -104,7 +103,14 @@ describe("canInsert - controlled fixtures", () => {
     const result = canInsert(candidate, tech, route, FIXTURE_TRAVEL, shiftBoundsFor(tech));
     // Index 0 would push job2's start to 590 -> end 610, past its 10:00 window: rejected.
     // Index 1 (after job2) starts at 600, ends 650, still inside the 09:00-17:00 shift.
-    expect(result).toEqual({ ok: true, insertIndex: 1, arrival: 600, start: 600, end: 650 });
+    expect(result).toEqual({
+      ok: true,
+      insertIndex: 1,
+      arrival: 600,
+      start: 600,
+      end: 650,
+      addedTravelMinutes: 0,
+    });
   });
 
   it("reports BUMPS_LATER_JOB when every position conflicts with a placed job or the shift end", () => {

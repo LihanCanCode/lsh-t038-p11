@@ -71,7 +71,14 @@ export type Plan = {
 };
 
 export type FeasibilityResult =
-  | { ok: true; insertIndex: number; arrival: number; start: number; end: number }
+  | {
+      ok: true;
+      insertIndex: number;
+      arrival: number;
+      start: number;
+      end: number;
+      addedTravelMinutes: number;
+    }
   | {
       ok: false;
       reason:
