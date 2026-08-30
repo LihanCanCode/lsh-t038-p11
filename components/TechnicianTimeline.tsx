@@ -2,17 +2,7 @@
 
 import { Technician, TimelineEntry } from "@/lib/engine/types";
 import { hhmmToMinutes, minutesToHhmm } from "@/lib/engine/time";
-
-// Skills are an open, data-driven vocabulary (never a fixed enum) — derive a
-// stable color from the string instead of switching on known skill names.
-function skillColor(skill: string): string {
-  let hash = 0;
-  for (let i = 0; i < skill.length; i++) {
-    hash = skill.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 60%, 42%)`;
-}
+import { skillColor } from "@/lib/ui/skillColor";
 
 type Segment =
   | { type: "job"; minutes: number; entry: TimelineEntry }
@@ -59,15 +49,24 @@ export default function TechnicianTimeline({
   const segments = buildSegments(entries, shiftStart, shiftEnd);
 
   return (
-    <div className="flex flex-col gap-1 py-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">{technician.name}</span>
+    <div className="flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/40">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="flex items-center gap-2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600/10 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-300">
+            {technician.name.slice(0, 1).toUpperCase()}
+          </span>
+          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {technician.name}
+          </span>
+          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+            {technician.home_area}
+          </span>
+        </div>
         <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          {technician.shift_start}–{technician.shift_end} · {technician.skills.join(", ")} · home:{" "}
-          {technician.home_area}
+          {technician.shift_start}–{technician.shift_end}
         </span>
       </div>
-      <div className="flex h-10 w-full overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800">
+      <div className="flex h-11 w-full overflow-hidden rounded-lg bg-zinc-100 shadow-inner ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/5">
         {segments.map((seg, i) => {
           const widthPercent = (seg.minutes / totalMinutes) * 100;
 
@@ -78,9 +77,9 @@ export default function TechnicianTimeline({
                 key={i}
                 title={`${job.id} · ${job.area} · ${job.skill} · window ${job.window_start}-${job.window_end} · scheduled ${minutesToHhmm(seg.entry.start)}-${minutesToHhmm(seg.entry.end)}`}
                 style={{ width: `${widthPercent}%`, backgroundColor: skillColor(job.skill) }}
-                className="flex items-center justify-center overflow-hidden px-1 text-[10px] font-medium text-white"
+                className="flex items-center justify-center overflow-hidden border-r border-white/25 px-1 text-[10px] font-semibold text-white last:border-r-0"
               >
-                <span className="truncate">{job.id}</span>
+                <span className="truncate drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)]">{job.id}</span>
               </div>
             );
           }
@@ -91,7 +90,7 @@ export default function TechnicianTimeline({
                 key={i}
                 title={`travel ${seg.minutes}min`}
                 style={{ width: `${widthPercent}%` }}
-                className="flex items-center justify-center overflow-hidden bg-zinc-300 text-[9px] text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200"
+                className="flex items-center justify-center overflow-hidden border-r border-white/40 bg-zinc-300 text-[9px] font-medium text-zinc-600 last:border-r-0 dark:border-black/20 dark:bg-zinc-700 dark:text-zinc-300"
               >
                 {widthPercent > 4 ? `${seg.minutes}m` : ""}
               </div>
@@ -103,7 +102,7 @@ export default function TechnicianTimeline({
               key={i}
               title={`idle ${seg.minutes}min`}
               style={{ width: `${widthPercent}%` }}
-              className="bg-zinc-50 dark:bg-zinc-900"
+              className="border-r border-white/40 last:border-r-0 dark:border-black/20"
             />
           );
         })}

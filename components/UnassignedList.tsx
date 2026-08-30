@@ -17,9 +17,18 @@ export default function UnassignedList({
 }) {
   if (unassigned.length === 0) {
     return (
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300">
+        <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4 shrink-0">
+          <path
+            d="M4 10.5 8 14l8-8"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
         All jobs were assigned in this case.
-      </p>
+      </div>
     );
   }
 
@@ -30,7 +39,7 @@ export default function UnassignedList({
         return (
           <li
             key={entry.jobId}
-            className="rounded-md border border-red-200 bg-red-50 p-3 text-sm dark:border-red-900/40 dark:bg-red-950/30"
+            className="rounded-lg border border-red-200/80 bg-red-50/70 p-3 text-sm shadow-sm dark:border-red-900/30 dark:bg-red-950/20"
           >
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="font-medium text-red-900 dark:text-red-200">{entry.jobId}</span>
@@ -39,11 +48,11 @@ export default function UnassignedList({
                   {job.skill} · {job.area} · {job.window_start}–{job.window_end}
                 </span>
               )}
-              <span className="rounded-full bg-red-200 px-2 py-0.5 text-[10px] font-medium text-red-900 dark:bg-red-900/50 dark:text-red-200">
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800 dark:bg-red-900/50 dark:text-red-200">
                 {REASON_LABEL[entry.reason]}
               </span>
             </div>
-            <p className="mt-1 text-xs text-red-800 dark:text-red-300">{entry.detail}</p>
+            <p className="mt-1 text-xs text-red-700/90 dark:text-red-300/90">{entry.detail}</p>
           </li>
         );
       })}

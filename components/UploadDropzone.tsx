@@ -48,10 +48,10 @@ export default function UploadDropzone() {
         if (file) handleFile(file);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-10 text-center transition-colors ${
+      className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-12 text-center transition-colors ${
         isDragging
-          ? "border-zinc-950 bg-zinc-100 dark:border-zinc-50 dark:bg-zinc-900"
-          : "border-zinc-300 dark:border-zinc-700"
+          ? "border-indigo-500 bg-indigo-50/60 dark:border-indigo-400 dark:bg-indigo-950/20"
+          : "border-zinc-300 bg-white/60 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-950/40 dark:hover:border-zinc-600"
       }`}
     >
       <input
@@ -65,6 +65,17 @@ export default function UploadDropzone() {
           e.target.value = "";
         }}
       />
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400">
+        <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
+          <path
+            d="M12 16V4m0 0-4 4m4-4 4 4M5 16.8V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.2"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
       <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
         Drop the dataset JSON here, or click to browse
       </p>
@@ -72,7 +83,7 @@ export default function UploadDropzone() {
         Expects the P11_route_shift dataset shape ({"{ schema_version, problem_id, cases[] }"})
       </p>
       {error && (
-        <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
+        <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
       )}
     </div>
   );
