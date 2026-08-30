@@ -135,6 +135,29 @@ describe("canInsert - controlled fixtures", () => {
     const result = canInsert(candidate, tech, route, FIXTURE_TRAVEL, shiftBoundsFor(tech));
     expect(result).toEqual({ ok: false, reason: "BUMPS_LATER_JOB" });
   });
+
+  it("minInsertIndex forbids inserting before an already-started (locked) entry", () => {
+    const tech = makeTech();
+    const locked: Job = makeJob({
+      id: "locked-job",
+      area: "A",
+      window_start: "09:00",
+      window_end: "17:00",
+      duration_minutes: 30,
+    });
+    const route: TimelineEntry[] = [
+      { job: locked, arrival: 540, start: 540, end: 570, travelFromPrev: 0 },
+    ];
+    const candidate = makeJob({ id: "job3", area: "A", duration_minutes: 30, window_start: "09:00", window_end: "17:00" });
+
+    // Without a floor, index 0 (before the locked job) ties on added travel
+    // and wins as the first candidate found — exactly the bug this guards.
+    const unrestricted = canInsert(candidate, tech, route, FIXTURE_TRAVEL, shiftBoundsFor(tech));
+    expect(unrestricted).toEqual({ ok: true, insertIndex: 0, arrival: 540, start: 540, end: 570, addedTravelMinutes: 0 });
+
+    const restricted = canInsert(candidate, tech, route, FIXTURE_TRAVEL, shiftBoundsFor(tech), 1);
+    expect(restricted).toEqual({ ok: true, insertIndex: 1, arrival: 570, start: 570, end: 600, addedTravelMinutes: 0 });
+  });
 });
 
 describe("canInsert - real dataset smoke checks", () => {

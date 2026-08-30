@@ -30,7 +30,8 @@ export function canInsert(
   tech: Technician,
   currentRoute: TimelineEntry[],
   travelMatrix: TravelMatrix,
-  shiftBounds: ShiftBounds
+  shiftBounds: ShiftBounds,
+  minInsertIndex: number = 0
 ): FeasibilityResult {
   if (!tech.skills.includes(job.skill)) {
     return { ok: false, reason: "SKILL_MISMATCH" };
@@ -44,7 +45,9 @@ export function canInsert(
     | null = null;
   const failureReasons = new Set<FailureReason>();
 
-  for (let index = 0; index <= currentRoute.length; index++) {
+  // minInsertIndex > 0 forbids inserting before that position — used to keep
+  // already-started/locked entries at the front of the route untouched.
+  for (let index = minInsertIndex; index <= currentRoute.length; index++) {
     const prevArea = index === 0 ? shiftBounds.homeArea : currentRoute[index - 1].job.area;
     const prevEnd = index === 0 ? shiftBounds.startMinutes : currentRoute[index - 1].end;
 

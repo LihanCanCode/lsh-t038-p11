@@ -1,6 +1,7 @@
 import { Case, Job, Plan, Technician, TimelineEntry, UnassignedEntry } from "./types";
 import { canInsert, shiftBoundsFor } from "./feasibility";
 import { recomputeRouteFrom } from "./route";
+import { TravelMatrix } from "./travel";
 import { hhmmToMinutes } from "./time";
 
 type BlockingReason = Exclude<UnassignedEntry["reason"], "NO_MATCHING_TECHNICIAN">;
@@ -39,17 +40,25 @@ function jobWindowTightness(job: Job): number {
   return hhmmToMinutes(job.window_end) - hhmmToMinutes(job.window_start);
 }
 
-export function buildPlan(kase: Case): Plan {
-  const routes: Record<string, TimelineEntry[]> = {};
-  for (const tech of kase.technicians) {
-    routes[tech.id] = [];
-  }
-
-  const sortedJobs = [...kase.jobs].sort((a, b) => jobWindowTightness(a) - jobWindowTightness(b));
+// Greedily inserts `jobs` (earliest-deadline-first) into `routes`, mutating
+// them in place, and returns the jobs that couldn't be placed. `routes` may
+// arrive pre-seeded (e.g. with already-started entries kept fixed) and
+// `minInsertIndex` can pin a floor per technician so nothing gets inserted
+// before that point — used to keep locked history untouched during a
+// mid-day replan. Shared by buildPlan (floor 0 everywhere) and the emergency
+// re-plan path (floor = each technician's locked-entry count).
+export function runInsertionPass(
+  jobs: Job[],
+  technicians: Technician[],
+  routes: Record<string, TimelineEntry[]>,
+  travelMatrix: TravelMatrix,
+  minInsertIndex: (techId: string) => number
+): UnassignedEntry[] {
+  const sortedJobs = [...jobs].sort((a, b) => jobWindowTightness(a) - jobWindowTightness(b));
   const unassigned: UnassignedEntry[] = [];
 
   for (const job of sortedJobs) {
-    const eligibleTechs = kase.technicians.filter((t) => t.skills.includes(job.skill));
+    const eligibleTechs = technicians.filter((t) => t.skills.includes(job.skill));
 
     if (eligibleTechs.length === 0) {
       unassigned.push({
@@ -73,7 +82,14 @@ export function buildPlan(kase: Case): Plan {
     const blockingReasons = new Set<BlockingReason>();
 
     for (const tech of eligibleTechs) {
-      const result = canInsert(job, tech, routes[tech.id], kase.travel_minutes, shiftBoundsFor(tech));
+      const result = canInsert(
+        job,
+        tech,
+        routes[tech.id],
+        travelMatrix,
+        shiftBoundsFor(tech),
+        minInsertIndex(tech.id)
+      );
       if (result.ok) {
         if (!best || result.addedTravelMinutes < best.addedTravelMinutes) {
           best = {
@@ -98,9 +114,7 @@ export function buildPlan(kase: Case): Plan {
 
     const route = routes[best.tech.id];
     const prevEnd =
-      best.insertIndex === 0
-        ? shiftBoundsFor(best.tech).startMinutes
-        : route[best.insertIndex - 1].end;
+      best.insertIndex === 0 ? shiftBoundsFor(best.tech).startMinutes : route[best.insertIndex - 1].end;
 
     const entry: TimelineEntry = {
       job,
@@ -110,8 +124,19 @@ export function buildPlan(kase: Case): Plan {
       travelFromPrev: best.arrival - prevEnd,
     };
     route.splice(best.insertIndex, 0, entry);
-    recomputeRouteFrom(route, best.insertIndex + 1, best.tech, kase.travel_minutes);
+    recomputeRouteFrom(route, best.insertIndex + 1, best.tech, travelMatrix);
   }
+
+  return unassigned;
+}
+
+export function buildPlan(kase: Case): Plan {
+  const routes: Record<string, TimelineEntry[]> = {};
+  for (const tech of kase.technicians) {
+    routes[tech.id] = [];
+  }
+
+  const unassigned = runInsertionPass(kase.jobs, kase.technicians, routes, kase.travel_minutes, () => 0);
 
   return { routes, unassigned };
 }
