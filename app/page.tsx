@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import UploadDropzone from "@/components/UploadDropzone";
 import CaseSelector from "@/components/CaseSelector";
 import { useSelectedCase } from "@/lib/store/useDatasetStore";
@@ -51,6 +52,12 @@ export default function Home() {
                 </dd>
               </div>
             </dl>
+            <Link
+              href="/planner"
+              className="mt-4 inline-block rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-50 dark:text-zinc-950"
+            >
+              View plan
+            </Link>
           </div>
         )}
       </main>
