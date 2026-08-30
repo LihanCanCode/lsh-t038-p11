@@ -7,7 +7,7 @@ Solution for **LofiStack Hackathon 2026 — P11**
 - **Team:** `Mrittu_Machines`
 - **Team ID:** `LSH26-T038`
 - **Problem:** `P11 — Route and Shift Assignment Optimiser`
-- **Live application:** Not deployed yet — deployment planned before submission.
+- **Live application:** <https://lsh-t038-p11.vercel.app/>
 - **Demo video:** Not provided.
 
 > Judges will evaluate only the exact commit SHA entered in the Final Submission Form.
@@ -27,7 +27,7 @@ An in-browser technician dispatch planner: upload a route/shift dataset (technic
 
 ## How to test the application
 
-1. Open the application (locally at `http://localhost:3000` until deployed — see [Run locally](#run-locally)).
+1. Open the live application at <https://lsh-t038-p11.vercel.app/> (or run it locally — see [Run locally](#run-locally)).
 2. On the home page, drag in `public/data/P11_route_shift_public.json` (or click to browse to it) and pick any case from the dropdown that appears.
 3. Click **View plan** to open the planner. The technician timelines and unassigned-jobs list are generated immediately.
 4. Try reassigning a job: click a job block (or an unassigned job) then pick a technician chip in the sidebar's **Reassign** tab, or just drag the job block onto another technician's row.
@@ -69,7 +69,7 @@ Then open `http://localhost:3000`.
 - **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
 - **Backend:** None — fully client-side; the dataset and generated plan live in memory for the session (Zustand store)
 - **Database:** None
-- **Deployment:** Not yet deployed (planned before submission)
+- **Deployment:** Vercel
 - **Other material tools:** Zod (schema + cross-reference validation of the uploaded dataset), Vitest (unit/integration tests)
 
 See [`LICENSES.md`](LICENSES.md) for third-party materials.
