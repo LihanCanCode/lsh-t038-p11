@@ -34,7 +34,7 @@ export default function SickTechnicianForm({
       }}
       className="flex flex-col gap-3"
     >
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3">
         <label className={labelClass}>
           Technician
           <select value={techId} onChange={(e) => setTechId(e.target.value)} className={fieldClass}>

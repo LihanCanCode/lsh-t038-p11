@@ -50,7 +50,7 @@ export default function EmergencyJobForm({
       }}
       className="flex flex-col gap-3"
     >
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3">
         <label className={labelClass}>
           Now (cursor)
           <input type="time" required value={cursor} onChange={(e) => setCursor(e.target.value)} className={fieldClass} />

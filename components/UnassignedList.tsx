@@ -35,25 +35,25 @@ export default function UnassignedList({
           <li
             key={entry.jobId}
             onClick={onSelectJob ? () => onSelectJob(entry.jobId) : undefined}
-            className={`rounded-lg border border-rose-200/80 bg-rose-50/70 p-3 text-sm ${
-              onSelectJob ? "cursor-pointer transition-colors hover:bg-rose-100/70" : ""
+            className={`rounded-lg border border-y-stone-200 border-r-stone-200 border-l-[3px] border-l-rose-400 bg-white p-3 text-sm shadow-sm ${
+              onSelectJob ? "cursor-pointer transition-colors hover:bg-stone-50" : ""
             }`}
           >
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="font-medium text-rose-900">{entry.jobId}</span>
+              <span className="font-medium text-stone-900">{entry.jobId}</span>
               {job && (
-                <span className="text-xs text-rose-800/80">
+                <span className="text-xs text-stone-500">
                   {job.skill} · {job.area} ·{" "}
                   <span className="font-mono tabular-nums">
                     {job.window_start}–{job.window_end}
                   </span>
                 </span>
               )}
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-800">
+              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-200">
                 {REASON_LABEL[entry.reason]}
               </span>
             </div>
-            <p className="mt-1 text-xs text-rose-700/90">{entry.detail}</p>
+            <p className="mt-1 text-xs text-stone-500">{entry.detail}</p>
           </li>
         );
       })}

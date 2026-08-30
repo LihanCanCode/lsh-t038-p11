@@ -35,6 +35,7 @@ export default function PlannerPage() {
   const [dragOverTechId, setDragOverTechId] = useState<string | null>(null);
   const [dropFeedback, setDropFeedback] = useState<{ ok: boolean; message: string } | null>(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [activeTab, setActiveTab] = useState<"reassign" | "emergency" | "sick">("reassign");
 
   // Rebuild the plan whenever the selected case changes. Done during render
   // (not an effect) so the freshly-built plan is used for this render.
@@ -242,9 +243,15 @@ export default function PlannerPage() {
     );
   }
 
+  const tabs = [
+    { id: "reassign" as const, label: "Reassign" },
+    { id: "emergency" as const, label: "Emergency" },
+    { id: "sick" as const, label: "Sick" },
+  ];
+
   return (
     <div className="flex flex-1 flex-col items-center">
-      <main className="flex w-full max-w-4xl flex-col gap-6 py-10 px-6">
+      <main className="flex w-full max-w-6xl flex-col gap-6 py-10 px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-medium text-stone-400">
@@ -274,119 +281,133 @@ export default function PlannerPage() {
           <StatCard label="Total travel" value={`${stats.totalTravel}m`} />
         </dl>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
-              Technician timelines
-            </h2>
-            <SkillLegend skills={skills} />
-          </div>
-          <div className="px-2">
-            <TimelineRuler startMinutes={globalRange.start} endMinutes={globalRange.end} />
-          </div>
-          {dropFeedback && (
-            <div
-              className={`mb-2 rounded-lg px-3 py-2 text-xs font-medium ${
-                dropFeedback.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"
-              }`}
-            >
-              {dropFeedback.message}
-            </div>
-          )}
-          <div className="relative flex flex-col divide-y divide-stone-100">
-            {kase.technicians.map((tech) => {
-              const isDropTarget = dragOverTechId === tech.id;
-              const dropPreviewOk =
-                isDropTarget && draggedJobId ? previewMove(draggedJobId, tech.id).ok : null;
-              return (
-                <TechnicianTimeline
-                  key={tech.id}
-                  technician={tech}
-                  entries={plan.routes[tech.id] ?? []}
-                  globalStart={globalRange.start}
-                  globalEnd={globalRange.end}
-                  selectedJobId={selectedJobId}
-                  onSelectJob={setSelectedJobId}
-                  isSick={sickTechnicianIds.has(tech.id)}
-                  draggedJobId={draggedJobId}
-                  onJobDragStart={setDraggedJobId}
-                  onJobDragEnd={() => {
-                    setDraggedJobId(null);
-                    setDragOverTechId(null);
-                  }}
-                  isDropTarget={isDropTarget}
-                  dropPreviewOk={dropPreviewOk}
-                  onRowDragOver={() => setDragOverTechId(tech.id)}
-                  onRowDragLeave={() => setDragOverTechId((id) => (id === tech.id ? null : id))}
-                  onRowDrop={() => handleDropOnTechnician(tech.id)}
-                />
-              );
-            })}
-            {cursorMinutes !== null && cursorMinutes >= globalRange.start && cursorMinutes <= globalRange.end && (
-              <div
-                className="pointer-events-none absolute inset-y-0 z-20 w-px bg-violet-500"
-                style={{
-                  left: `calc(8px + (100% - 16px) * ${
-                    (cursorMinutes - globalRange.start) / Math.max(globalRange.end - globalRange.start, 1)
-                  })`,
-                }}
-              >
-                <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-violet-600 px-1.5 py-0.5 text-[9px] font-semibold text-white">
-                  now · {minutesToHhmm(cursorMinutes)}
-                </span>
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="flex flex-col gap-6">
+            <section className="rounded-2xl border border-stone-200 bg-white p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+                  Technician timelines
+                </h2>
+                <SkillLegend skills={skills} />
               </div>
-            )}
+              <div className="px-2">
+                <TimelineRuler startMinutes={globalRange.start} endMinutes={globalRange.end} />
+              </div>
+              {dropFeedback && (
+                <div
+                  className={`mb-2 rounded-lg px-3 py-2 text-xs font-medium ${
+                    dropFeedback.ok ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"
+                  }`}
+                >
+                  {dropFeedback.message}
+                </div>
+              )}
+              <div className="relative flex flex-col divide-y divide-stone-100">
+                {kase.technicians.map((tech) => {
+                  const isDropTarget = dragOverTechId === tech.id;
+                  const dropPreviewOk =
+                    isDropTarget && draggedJobId ? previewMove(draggedJobId, tech.id).ok : null;
+                  return (
+                    <TechnicianTimeline
+                      key={tech.id}
+                      technician={tech}
+                      entries={plan.routes[tech.id] ?? []}
+                      globalStart={globalRange.start}
+                      globalEnd={globalRange.end}
+                      selectedJobId={selectedJobId}
+                      onSelectJob={setSelectedJobId}
+                      isSick={sickTechnicianIds.has(tech.id)}
+                      draggedJobId={draggedJobId}
+                      onJobDragStart={setDraggedJobId}
+                      onJobDragEnd={() => {
+                        setDraggedJobId(null);
+                        setDragOverTechId(null);
+                      }}
+                      isDropTarget={isDropTarget}
+                      dropPreviewOk={dropPreviewOk}
+                      onRowDragOver={() => setDragOverTechId(tech.id)}
+                      onRowDragLeave={() => setDragOverTechId((id) => (id === tech.id ? null : id))}
+                      onRowDrop={() => handleDropOnTechnician(tech.id)}
+                    />
+                  );
+                })}
+                {cursorMinutes !== null && cursorMinutes >= globalRange.start && cursorMinutes <= globalRange.end && (
+                  <div
+                    className="pointer-events-none absolute inset-y-0 z-20 w-px bg-violet-500"
+                    style={{
+                      left: `calc(8px + (100% - 16px) * ${
+                        (cursorMinutes - globalRange.start) / Math.max(globalRange.end - globalRange.start, 1)
+                      })`,
+                    }}
+                  >
+                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-violet-600 px-1.5 py-0.5 text-[9px] font-semibold text-white">
+                      now · {minutesToHhmm(cursorMinutes)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-stone-200 bg-white p-5">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
+                Unassigned jobs ({plan.unassigned.length})
+              </h2>
+              <UnassignedList unassigned={plan.unassigned} jobsById={jobsById} onSelectJob={setSelectedJobId} />
+            </section>
           </div>
-        </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Emergency job (mid-day)
-          </h2>
-          <EmergencyJobForm
-            key={kase.case_id}
-            areas={kase.areas}
-            defaultCursor={minutesToHhmm(
-              globalRange.start + Math.round((globalRange.end - globalRange.start) / 2 / 5) * 5
+          <aside className="sticky top-6 flex flex-col rounded-2xl border border-stone-200 bg-white p-5">
+            <div className="mb-4 flex border-b border-stone-200">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 border-b-2 pb-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                    activeTab === tab.id
+                      ? "border-violet-600 text-violet-600"
+                      : "border-transparent text-stone-400 hover:text-stone-600"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "reassign" && (
+              <ManualMoveControl
+                job={selectedJobId ? jobsById.get(selectedJobId) ?? null : null}
+                currentTechId={selectedJobId ? currentTechIdOf(selectedJobId) : null}
+                technicians={availableTechnicians}
+                manualMove={kase.manual_move}
+                onMove={handleMove}
+                previewMove={previewMove}
+              />
             )}
-            onSubmit={handleInjectEmergency}
-          />
-        </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Sick technician (mid-day)
-          </h2>
-          <SickTechnicianForm
-            key={kase.case_id + sickTechnicianIds.size}
-            technicians={availableTechnicians}
-            defaultCursor={minutesToHhmm(
-              globalRange.start + Math.round((globalRange.end - globalRange.start) / 2 / 5) * 5
+            {activeTab === "emergency" && (
+              <EmergencyJobForm
+                key={kase.case_id}
+                areas={kase.areas}
+                defaultCursor={minutesToHhmm(
+                  globalRange.start + Math.round((globalRange.end - globalRange.start) / 2 / 5) * 5
+                )}
+                onSubmit={handleInjectEmergency}
+              />
             )}
-            onSubmit={handleMarkSick}
-          />
-        </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Reassign a job
-          </h2>
-          <ManualMoveControl
-            job={selectedJobId ? jobsById.get(selectedJobId) ?? null : null}
-            currentTechId={selectedJobId ? currentTechIdOf(selectedJobId) : null}
-            technicians={availableTechnicians}
-            manualMove={kase.manual_move}
-            onMove={handleMove}
-            previewMove={previewMove}
-          />
-        </section>
-
-        <section className="rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
-            Unassigned jobs ({plan.unassigned.length})
-          </h2>
-          <UnassignedList unassigned={plan.unassigned} jobsById={jobsById} onSelectJob={setSelectedJobId} />
-        </section>
+            {activeTab === "sick" && (
+              <SickTechnicianForm
+                key={kase.case_id + sickTechnicianIds.size}
+                technicians={availableTechnicians}
+                defaultCursor={minutesToHhmm(
+                  globalRange.start + Math.round((globalRange.end - globalRange.start) / 2 / 5) * 5
+                )}
+                onSubmit={handleMarkSick}
+              />
+            )}
+          </aside>
+        </div>
 
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <button
