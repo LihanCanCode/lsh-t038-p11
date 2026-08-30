@@ -1,0 +1,78 @@
+{
+    "team_id": "LSH26-T038",
+    "problem_id": "P11",
+    "repository_name": "lsh26-t038-p11",
+    "live_url": "Not deployed yet — deployment planned before submission.",
+    "demo_video_url_optional": "",
+    "event_start_code": "LSH26-8490-C900",
+    "repository_created_before_release": false,
+    "pre_event_materials": [],
+    "sample_data": {
+        "loads_published_fixture": true,
+        "method": "file upload",
+        "reset_instructions": "Refresh the page (all state is in-memory only; nothing is persisted to a backend or localStorage) and re-upload public/data/P11_route_shift_public.json via the upload dropzone on the home page. Selecting any case from the dropdown regenerates a fresh auto-assigned plan for that case, discarding any manual moves, injected emergency jobs, or sick-technician changes made during the session."
+    },
+    "problem_solving_method": "Implemented a greedy earliest-deadline-first insertion heuristic: jobs are sorted by window tightness (window_end - window_start ascending) and each is inserted at the technician/position with the lowest added travel among all feasible candidates (skill match, arrival/window/shift feasibility, and a cascade check that never bumps an already-placed job outside its own window). Chose a greedy heuristic over an exact solver (e.g. CP-SAT/OR-Tools) given the event's time constraints, and because the same insertion primitive (canInsert) needed to be reused unmodified for mid-day re-planning (emergency job injection, sick-technician reassignment) and for validating ad-hoc manual moves — one small, fully-tested function underpins every feature instead of a separate optimizer per feature.",
+    "requirements": {
+        "R1": {
+            "status": "complete",
+            "evidence": "Ingest & case selection — app/page.tsx (drag-and-drop upload, zod-validated parsing via lib/engine/types.ts and lib/engine/validate.ts) and components/CaseSelector.tsx for picking any of the file's 25 independent cases."
+        },
+        "R2": {
+            "status": "complete",
+            "evidence": "Auto-assignment — lib/engine/assign.ts (buildPlan / runInsertionPass): greedy earliest-deadline-first assignment maximizing jobs placed, total travel as tie-breaker. Verified in lib/engine/__tests__/assign.test.ts against all 25 bundled cases."
+        },
+        "R3": {
+            "status": "complete",
+            "evidence": "Timeline UI — app/planner/page.tsx with components/TechnicianTimeline.tsx, TimelineRuler.tsx and UnassignedList.tsx: per-technician horizontal timeline on a shared time axis (job/travel/idle/off-shift segments) plus a reasoned unassigned-jobs list."
+        },
+        "R4": {
+            "status": "complete",
+            "evidence": "Manual override & validity check — lib/engine/manualMove.ts (applyManualMove) reuses canInsert's exact reason codes; components/ManualMoveControl.tsx provides live-preview technician chips, a one-click 'Run scripted move' button for the case's own manual_move field, and full drag-and-drop reassignment. Snapshot-tested per case in lib/engine/__tests__/manualMove.test.ts."
+        }
+    },
+    "team_members": [
+        {
+            "registered_name": "Abrar Mahmud Hasan",
+            "github_username": "alchemistReturns",
+            "major_contribution": "Full implementation: scheduling engine (feasibility checking, greedy assignment, manual-move validation, mid-day re-planning, sick-technician re-planning, scoring), the Next.js UI, and all bonus features (emergency job injection, sick technician, score & compare).",
+            "evidence_paths_or_commits": [
+                "lib/engine/",
+                "app/",
+                "components/"
+            ]
+        },
+        {
+            "registered_name": "Tahsan Ferdous Lihan",
+            "github_username": "LihanCanCode",
+            "major_contribution": "QA and edge-case testing: found that a job or technician referencing an area missing from areas[] or travel_minutes was never validated at upload and would crash the planner mid-session; the team added lib/engine/validate.ts to reject such files at upload with a clear message, plus a defensive try/catch around buildPlan as a second safety net.",
+            "evidence_paths_or_commits": [
+                "lib/engine/validate.ts",
+                "lib/engine/__tests__/validate.test.ts",
+                "components/UploadDropzone.tsx",
+                "app/planner/page.tsx (planError handling)"
+            ]
+        }
+    ],
+    "major_design_decisions": [
+        "Kept lib/engine/ framework-agnostic (zero React imports) so the scheduling logic could be unit-tested directly against the bundled dataset, independent of the UI.",
+        "Extended canInsert with an optional minInsertIndex floor (default 0, fully backward-compatible) so already-started work can never be disturbed by mid-day re-planning or sick-technician reassignment — the same core function is reused rather than duplicated per feature.",
+        "Extracted a shared runInsertionPass out of buildPlan so the initial auto-assignment, emergency re-plan, and sick-technician re-plan all use identical greedy insertion semantics — one code path to fix or improve instead of three.",
+        "Client-only architecture (Zustand store, no backend): the dataset and plan live entirely in memory for the session, since case sizes are small and judges need a simple, reproducible reset (refresh + re-upload).",
+        "Manual reassignment ships two equivalent input methods — click-to-pick technician chips with a live accept/reject preview, and native HTML5 drag-and-drop — both call the same applyManualMove validation, so there is one source of truth for what a valid move is."
+    ],
+    "known_limitations": [
+        "Emergency-job injections and sick-technician markings are session-only state, not persisted; refreshing the page resets to the auto-generated baseline (by design, for reproducibility).",
+        "Drag-and-drop and the overall layout are desktop-only; not optimized for touch devices or narrow viewports.",
+        "The assignment algorithm is a greedy heuristic, not an exact solver — total travel is a tie-breaker, not a jointly optimized objective. The Score & Compare panel has a swap-in point for a future CP-SAT/OR-Tools exact solve, but that solve itself was not implemented."
+    ],
+    "ai_tools_used": [
+        {
+            "tool": "Claude Code (Anthropic, Claude Sonnet 5)",
+            "used_for": "Pair-programmed the entire implementation: scheduling engine, Next.js UI, all bonus features, and this manifest and LICENSES.md.",
+            "how_output_was_verified": "161-test Vitest suite including invariant checks run against all 25 real bundled cases (not just synthetic fixtures), tsc --noEmit type-checking, eslint with zero warnings/errors, manual review of every diff before acceptance, and manual exercising of the running app in-browser."
+        }
+    ],
+    "licenses_file": "LICENSES.md",
+    "declaration": "The information above is complete and truthful to the best of the team's knowledge."
+}
