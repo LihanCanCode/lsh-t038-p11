@@ -6,6 +6,7 @@ import { useSelectedCase } from "@/lib/store/useDatasetStore";
 import { buildPlan } from "@/lib/engine/assign";
 import { applyManualMove } from "@/lib/engine/manualMove";
 import { injectEmergencyJob } from "@/lib/engine/emergency";
+import { removeSickTechnician } from "@/lib/engine/sickTechnician";
 import { Case, Job, Plan } from "@/lib/engine/types";
 import { hhmmToMinutes, minutesToHhmm } from "@/lib/engine/time";
 import CaseSelector from "@/components/CaseSelector";
@@ -16,6 +17,7 @@ import SkillLegend from "@/components/SkillLegend";
 import StatCard from "@/components/StatCard";
 import ManualMoveControl, { MoveOutcome, MovePreview } from "@/components/ManualMoveControl";
 import EmergencyJobForm, { EmergencyJobInput } from "@/components/EmergencyJobForm";
+import SickTechnicianForm from "@/components/SickTechnicianForm";
 
 export default function PlannerPage() {
   const kase = useSelectedCase();
@@ -26,6 +28,7 @@ export default function PlannerPage() {
   const [extraJobs, setExtraJobs] = useState<Job[]>([]);
   const [emergencyCounter, setEmergencyCounter] = useState(1);
   const [cursorMinutes, setCursorMinutes] = useState<number | null>(null);
+  const [sickTechnicianIds, setSickTechnicianIds] = useState<Set<string>>(new Set());
 
   // Rebuild the plan whenever the selected case changes. Done during render
   // (not an effect) so the freshly-built plan is used for this render.
@@ -38,6 +41,7 @@ export default function PlannerPage() {
     setExtraJobs([]);
     setEmergencyCounter(1);
     setCursorMinutes(null);
+    setSickTechnicianIds(new Set());
     if (!kase) {
       setPlan(null);
       setPlanError(null);
@@ -161,6 +165,31 @@ export default function PlannerPage() {
     }
   }
 
+  function handleMarkSick(techId: string, cursorHHMM: string): { ok: boolean; message: string } {
+    if (!plan || !effectiveCase) return { ok: false, message: "No plan loaded." };
+
+    try {
+      const cursor = hhmmToMinutes(cursorHHMM);
+      const result = removeSickTechnician(plan, techId, cursor, effectiveCase);
+      setPlan(result);
+      setSickTechnicianIds((prev) => new Set(prev).add(techId));
+      setCursorMinutes(cursor);
+
+      const stillUnassigned = result.unassigned.length;
+      return {
+        ok: true,
+        message:
+          `${techId} marked sick as of ${cursorHHMM}. Work already done stays theirs; anything not yet ` +
+          `started was reassigned where possible` +
+          (stillUnassigned > 0 ? ` (${stillUnassigned} job(s) now unassigned).` : "."),
+      };
+    } catch (e) {
+      return { ok: false, message: e instanceof Error ? e.message : "Unknown error." };
+    }
+  }
+
+  const availableTechnicians = kase ? kase.technicians.filter((t) => !sickTechnicianIds.has(t.id)) : [];
+
   if (planError) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-10 text-center">
@@ -235,6 +264,7 @@ export default function PlannerPage() {
                 globalEnd={globalRange.end}
                 selectedJobId={selectedJobId}
                 onSelectJob={setSelectedJobId}
+                isSick={sickTechnicianIds.has(tech.id)}
               />
             ))}
             {cursorMinutes !== null && cursorMinutes >= globalRange.start && cursorMinutes <= globalRange.end && (
@@ -270,12 +300,26 @@ export default function PlannerPage() {
 
         <section className="rounded-2xl border border-stone-200 bg-white p-5">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
+            Sick technician (mid-day)
+          </h2>
+          <SickTechnicianForm
+            key={kase.case_id + sickTechnicianIds.size}
+            technicians={availableTechnicians}
+            defaultCursor={minutesToHhmm(
+              globalRange.start + Math.round((globalRange.end - globalRange.start) / 2 / 5) * 5
+            )}
+            onSubmit={handleMarkSick}
+          />
+        </section>
+
+        <section className="rounded-2xl border border-stone-200 bg-white p-5">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400">
             Reassign a job
           </h2>
           <ManualMoveControl
             job={selectedJobId ? jobsById.get(selectedJobId) ?? null : null}
             currentTechId={selectedJobId ? currentTechIdOf(selectedJobId) : null}
-            technicians={kase.technicians}
+            technicians={availableTechnicians}
             manualMove={kase.manual_move}
             onMove={handleMove}
             previewMove={previewMove}

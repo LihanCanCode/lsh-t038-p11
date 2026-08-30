@@ -63,6 +63,7 @@ export default function TechnicianTimeline({
   globalEnd,
   selectedJobId,
   onSelectJob,
+  isSick,
 }: {
   technician: Technician;
   entries: TimelineEntry[];
@@ -70,6 +71,7 @@ export default function TechnicianTimeline({
   globalEnd: number;
   selectedJobId?: string | null;
   onSelectJob?: (jobId: string) => void;
+  isSick?: boolean;
 }) {
   const shiftStart = hhmmToMinutes(technician.shift_start);
   const shiftEnd = hhmmToMinutes(technician.shift_end);
@@ -77,7 +79,11 @@ export default function TechnicianTimeline({
   const segments = buildSegments(entries, globalStart, shiftStart, shiftEnd, globalEnd);
 
   return (
-    <div className="group/row flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors duration-200 hover:bg-stone-50">
+    <div
+      className={`group/row flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors duration-200 hover:bg-stone-50 ${
+        isSick ? "opacity-60" : ""
+      }`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600/10 text-[10px] font-semibold text-violet-700 transition-transform duration-200 group-hover/row:scale-110">
@@ -87,6 +93,11 @@ export default function TechnicianTimeline({
           <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500">
             {technician.home_area}
           </span>
+          {isSick && (
+            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700">
+              out sick
+            </span>
+          )}
         </div>
         <span className="font-mono text-[11px] tabular-nums text-stone-400">
           {technician.shift_start}–{technician.shift_end}
