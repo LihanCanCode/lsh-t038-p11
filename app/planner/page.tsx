@@ -1,18 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSelectedCase } from "@/lib/store/useDatasetStore";
 import { buildPlan } from "@/lib/engine/assign";
+import { applyManualMove } from "@/lib/engine/manualMove";
+import { Plan } from "@/lib/engine/types";
 import CaseSelector from "@/components/CaseSelector";
 import TechnicianTimeline from "@/components/TechnicianTimeline";
 import UnassignedList from "@/components/UnassignedList";
 import SkillLegend from "@/components/SkillLegend";
 import StatCard from "@/components/StatCard";
+import ManualMoveControl, { MoveOutcome } from "@/components/ManualMoveControl";
 
 export default function PlannerPage() {
   const kase = useSelectedCase();
-  const plan = useMemo(() => (kase ? buildPlan(kase) : null), [kase]);
+  const [planCaseId, setPlanCaseId] = useState<string | null>(null);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  // Rebuild the plan whenever the selected case changes. Done during render
+  // (not an effect) so the freshly-built plan is used for this render.
+  if ((kase?.case_id ?? null) !== planCaseId) {
+    setPlanCaseId(kase?.case_id ?? null);
+    setPlan(kase ? buildPlan(kase) : null);
+    setSelectedJobId(null);
+  }
+
   const jobsById = useMemo(
     () => new Map((kase?.jobs ?? []).map((job) => [job.id, job])),
     [kase]
@@ -31,6 +45,28 @@ export default function PlannerPage() {
     () => Array.from(new Set((kase?.jobs ?? []).map((job) => job.skill))).sort(),
     [kase]
   );
+
+  const currentTechIdOf = (jobId: string): string | null => {
+    if (!plan) return null;
+    for (const [techId, route] of Object.entries(plan.routes)) {
+      if (route.some((e) => e.job.id === jobId)) return techId;
+    }
+    return null;
+  };
+
+  function handleMove(jobId: string, toTechId: string): MoveOutcome {
+    if (!plan || !kase) return { ok: false, error: "No plan loaded." };
+    try {
+      const result = applyManualMove(plan, jobId, toTechId, kase);
+      if (result.ok) {
+        setPlan(result.newPlan);
+        return { ok: true };
+      }
+      return { ok: false, reason: result.reason };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : "Unknown error" };
+    }
+  }
 
   if (!kase || !plan || !stats) {
     return (
@@ -89,6 +125,8 @@ export default function PlannerPage() {
                 key={tech.id}
                 technician={tech}
                 entries={plan.routes[tech.id] ?? []}
+                selectedJobId={selectedJobId}
+                onSelectJob={setSelectedJobId}
               />
             ))}
           </div>
@@ -96,9 +134,26 @@ export default function PlannerPage() {
 
         <section className="rounded-2xl border border-zinc-200/70 bg-white/80 p-5 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-950/60">
           <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Reassign a job
+          </h2>
+          <ManualMoveControl
+            job={selectedJobId ? jobsById.get(selectedJobId) ?? null : null}
+            currentTechId={selectedJobId ? currentTechIdOf(selectedJobId) : null}
+            technicians={kase.technicians}
+            manualMove={kase.manual_move}
+            onMove={handleMove}
+          />
+        </section>
+
+        <section className="rounded-2xl border border-zinc-200/70 bg-white/80 p-5 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-950/60">
+          <h2 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Unassigned jobs ({plan.unassigned.length})
           </h2>
-          <UnassignedList unassigned={plan.unassigned} jobsById={jobsById} />
+          <UnassignedList
+            unassigned={plan.unassigned}
+            jobsById={jobsById}
+            onSelectJob={setSelectedJobId}
+          />
         </section>
       </main>
     </div>

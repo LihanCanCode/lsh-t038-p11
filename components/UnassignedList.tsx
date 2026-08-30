@@ -1,19 +1,14 @@
 import { Job, UnassignedEntry } from "@/lib/engine/types";
-
-const REASON_LABEL: Record<UnassignedEntry["reason"], string> = {
-  NO_MATCHING_TECHNICIAN: "No technician has this skill",
-  SKILL_MISMATCH: "No technician has this skill",
-  WINDOW_UNREACHABLE: "Unreachable within the job window",
-  OUTSIDE_SHIFT: "Would run past shift end",
-  BUMPS_LATER_JOB: "Would bump another scheduled job",
-};
+import { REASON_LABEL } from "@/lib/ui/reasonLabel";
 
 export default function UnassignedList({
   unassigned,
   jobsById,
+  onSelectJob,
 }: {
   unassigned: UnassignedEntry[];
   jobsById: Map<string, Job>;
+  onSelectJob?: (jobId: string) => void;
 }) {
   if (unassigned.length === 0) {
     return (
@@ -39,7 +34,10 @@ export default function UnassignedList({
         return (
           <li
             key={entry.jobId}
-            className="rounded-lg border border-red-200/80 bg-red-50/70 p-3 text-sm shadow-sm dark:border-red-900/30 dark:bg-red-950/20"
+            onClick={onSelectJob ? () => onSelectJob(entry.jobId) : undefined}
+            className={`rounded-lg border border-red-200/80 bg-red-50/70 p-3 text-sm shadow-sm dark:border-red-900/30 dark:bg-red-950/20 ${
+              onSelectJob ? "cursor-pointer transition-colors hover:bg-red-100/70 dark:hover:bg-red-950/40" : ""
+            }`}
           >
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="font-medium text-red-900 dark:text-red-200">{entry.jobId}</span>

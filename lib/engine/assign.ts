@@ -1,6 +1,6 @@
 import { Case, Job, Plan, Technician, TimelineEntry, UnassignedEntry } from "./types";
 import { canInsert, shiftBoundsFor } from "./feasibility";
-import { getTravel, TravelMatrix } from "./travel";
+import { recomputeRouteFrom } from "./route";
 import { hhmmToMinutes } from "./time";
 
 type BlockingReason = Exclude<UnassignedEntry["reason"], "NO_MATCHING_TECHNICIAN">;
@@ -37,25 +37,6 @@ function describeUnassigned(job: Job, reason: UnassignedEntry["reason"]): string
 
 function jobWindowTightness(job: Job): number {
   return hhmmToMinutes(job.window_end) - hhmmToMinutes(job.window_start);
-}
-
-// After splicing a new entry into a route, every entry after it shifts:
-// their arrival/start/end must be recomputed from the new predecessor chain.
-function recomputeFrom(
-  route: TimelineEntry[],
-  fromIndex: number,
-  tech: Technician,
-  travelMatrix: TravelMatrix
-): void {
-  for (let i = fromIndex; i < route.length; i++) {
-    const prevEnd = i === 0 ? shiftBoundsFor(tech).startMinutes : route[i - 1].end;
-    const prevArea = i === 0 ? tech.home_area : route[i - 1].job.area;
-    const travel = getTravel(travelMatrix, prevArea, route[i].job.area);
-    const arrival = prevEnd + travel;
-    const start = Math.max(arrival, hhmmToMinutes(route[i].job.window_start));
-    const end = start + route[i].job.duration_minutes;
-    route[i] = { ...route[i], arrival, start, end, travelFromPrev: arrival - prevEnd };
-  }
 }
 
 export function buildPlan(kase: Case): Plan {
@@ -129,7 +110,7 @@ export function buildPlan(kase: Case): Plan {
       travelFromPrev: best.arrival - prevEnd,
     };
     route.splice(best.insertIndex, 0, entry);
-    recomputeFrom(route, best.insertIndex + 1, best.tech, kase.travel_minutes);
+    recomputeRouteFrom(route, best.insertIndex + 1, best.tech, kase.travel_minutes);
   }
 
   return { routes, unassigned };

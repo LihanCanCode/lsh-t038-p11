@@ -39,9 +39,13 @@ function buildSegments(entries: TimelineEntry[], shiftStart: number, shiftEnd: n
 export default function TechnicianTimeline({
   technician,
   entries,
+  selectedJobId,
+  onSelectJob,
 }: {
   technician: Technician;
   entries: TimelineEntry[];
+  selectedJobId?: string | null;
+  onSelectJob?: (jobId: string) => void;
 }) {
   const shiftStart = hhmmToMinutes(technician.shift_start);
   const shiftEnd = hhmmToMinutes(technician.shift_end);
@@ -72,15 +76,20 @@ export default function TechnicianTimeline({
 
           if (seg.type === "job") {
             const job = seg.entry.job;
+            const isSelected = selectedJobId === job.id;
             return (
-              <div
+              <button
                 key={i}
+                type="button"
+                onClick={onSelectJob ? () => onSelectJob(job.id) : undefined}
                 title={`${job.id} · ${job.area} · ${job.skill} · window ${job.window_start}-${job.window_end} · scheduled ${minutesToHhmm(seg.entry.start)}-${minutesToHhmm(seg.entry.end)}`}
                 style={{ width: `${widthPercent}%`, backgroundColor: skillColor(job.skill) }}
-                className="flex items-center justify-center overflow-hidden border-r border-white/25 px-1 text-[10px] font-semibold text-white last:border-r-0"
+                className={`flex items-center justify-center overflow-hidden border-r border-white/25 px-1 text-[10px] font-semibold text-white outline-none last:border-r-0 ${
+                  onSelectJob ? "cursor-pointer" : ""
+                } ${isSelected ? "ring-2 ring-inset ring-white" : ""}`}
               >
                 <span className="truncate drop-shadow-[0_1px_1px_rgba(0,0,0,0.45)]">{job.id}</span>
-              </div>
+              </button>
             );
           }
 

@@ -1,0 +1,176 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-01: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-02: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-03: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-04: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-05: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-06: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-07: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-08: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-09: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-10: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-11: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-12: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-13: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-14: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-15: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-16: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-17: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-18: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-19: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-20: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "WINDOW_UNREACHABLE",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-21: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-22: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-23: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-24: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
+
+exports[`applyManualMove - scripted manual_move (real dataset) > case PUB-25: the scripted manual_move outcome is pinned 1`] = `
+{
+  "outcome": "rejected",
+  "reason": "SKILL_MISMATCH",
+}
+`;
