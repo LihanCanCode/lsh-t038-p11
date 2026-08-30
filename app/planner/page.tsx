@@ -18,6 +18,7 @@ import StatCard from "@/components/StatCard";
 import ManualMoveControl, { MoveOutcome, MovePreview } from "@/components/ManualMoveControl";
 import EmergencyJobForm, { EmergencyJobInput } from "@/components/EmergencyJobForm";
 import SickTechnicianForm from "@/components/SickTechnicianForm";
+import PlanComparisonPanel from "@/components/PlanComparisonPanel";
 import { REASON_LABEL } from "@/lib/ui/reasonLabel";
 
 export default function PlannerPage() {
@@ -33,6 +34,7 @@ export default function PlannerPage() {
   const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
   const [dragOverTechId, setDragOverTechId] = useState<string | null>(null);
   const [dropFeedback, setDropFeedback] = useState<{ ok: boolean; message: string } | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
 
   // Rebuild the plan whenever the selected case changes. Done during render
   // (not an effect) so the freshly-built plan is used for this render.
@@ -384,6 +386,24 @@ export default function PlannerPage() {
             Unassigned jobs ({plan.unassigned.length})
           </h2>
           <UnassignedList unassigned={plan.unassigned} jobsById={jobsById} onSelectJob={setSelectedJobId} />
+        </section>
+
+        <section className="rounded-2xl border border-stone-200 bg-white p-5">
+          <button
+            type="button"
+            onClick={() => setShowComparison((v) => !v)}
+            className="flex w-full items-center justify-between text-left"
+          >
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+              Score &amp; compare — build an alternate plan by hand
+            </h2>
+            <span className="text-xs font-medium text-violet-600">{showComparison ? "Hide" : "Show"}</span>
+          </button>
+          {showComparison && (
+            <div className="mt-4">
+              <PlanComparisonPanel key={kase.case_id} kase={kase} />
+            </div>
+          )}
         </section>
       </main>
     </div>

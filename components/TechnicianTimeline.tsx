@@ -184,7 +184,9 @@ export default function TechnicianTimeline({
                   color: skillColor(job.skill),
                 }}
                 className={`relative flex items-center justify-center overflow-hidden px-1 text-[10px] font-bold outline-none transition-all duration-200 ease-out ${rounding} ${
-                  onSelectJob ? "cursor-grab active:cursor-grabbing hover:z-10 hover:scale-[1.08] hover:shadow-lg" : ""
+                  onSelectJob || onJobDragStart
+                    ? "cursor-grab active:cursor-grabbing hover:z-10 hover:scale-[1.08] hover:shadow-lg"
+                    : ""
                 } ${isSelected ? "z-10 shadow-lg ring-2 ring-violet-500" : ""} ${isBeingDragged ? "opacity-30" : ""}`}
               >
                 <span className="truncate">{job.id}</span>
